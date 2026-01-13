@@ -129,10 +129,10 @@ const ShirtDesigner = () => {
   ];
 
   const fabricTypes = [
-    { id: 'algodon', name: 'Algodón', image: '/textures/fabrics/cotton.jpg' },
-    { id: 'poliester', name: 'Poliéster', image: '/textures/fabrics/polyester.jpg' },
-    { id: 'mezcla', name: 'Mezcla', image: '/textures/fabrics/blend.jpg' },
-    { id: 'premium', name: 'Premium', image: '/textures/fabrics/premium.jpg' }
+    { id: 'algodon', name: 'Algodón', image: '/models/algodon.jpeg' },
+    //{ id: 'poliester', name: 'Poliéster', image: '/models/poliester.jpeg' },
+    //{ id: 'mezcla', name: 'Mezcla', image: '/models/algodon-poliester.jpeg' },
+    //{ id: 'premium', name: 'Premium', image: '/models/premium.jpeg' }
   ];
 
   // --- LISTA DE FUENTES DEFINITIVA, INSPIRADA EN LA IMAGEN ---
@@ -776,8 +776,30 @@ const ShirtDesigner = () => {
           const rect = canvas.getBoundingClientRect();
           const clientX = touch.clientX - rect.left;
           const clientY = touch.clientY - rect.top;
+          
           if (handle === 'move') {
             dragStart.current = { x: clientX, y: clientY, elementX: element.offsetX, elementY: element.offsetY };
+          } else if (handle === 'rotate') {
+            const pos = get2DPositionFromElement(element);
+            const angle = Math.atan2(clientY - pos.y, clientX - pos.x);
+            rotateStart.current = { angle, elementRotation: element.rotation || 0 };
+          } else if (handle.startsWith('scale-') || handle.startsWith('edge-')) {
+            const pos = get2DPositionFromElement(element);
+            const distance = Math.sqrt((clientX - pos.x) ** 2 + (clientY - pos.y) ** 2);
+            let aspectRatio = 1;
+            if (element.type === 'image' && element.texture?.image) {
+              aspectRatio = element.texture.image.height / element.texture.image.width;
+            } else if (element.type === 'text') {
+              aspectRatio = 0.3;
+            }
+            scaleStart.current = {
+              distance,
+              elementScale: element.scale,
+              width: element.scaleX || element.scale,
+              height: element.scaleY || (element.scale * aspectRatio),
+              startX: clientX,
+              startY: clientY
+            };
           }
         } else {
           isTouchActive.current = true;
@@ -797,11 +819,15 @@ const ShirtDesigner = () => {
         const rect = canvas.getBoundingClientRect();
         const x = touch.clientX - rect.left;
         const y = touch.clientY - rect.top;
-        if (isInteractingWithElement.current && selectedElementRef.current && activeHandleRef.current) {
+        const currentHandle = activeHandleRef.current;
+        
+        if (isInteractingWithElement.current && selectedElementRef.current && currentHandle) {
           const element = [...imageElementsRef.current, ...textElementsRef.current].find(el => 
             el.id === selectedElementRef.current.id && el.type === selectedElementRef.current.type
           );
-          if (element && activeHandleRef.current === 'move') {
+          if (!element) return;
+
+          if (currentHandle === 'move') {
             const deltaPixelsX = x - dragStart.current.x;
             const deltaPixelsY = y - dragStart.current.y;
             const worldDelta = screenToWorldDelta(deltaPixelsX, deltaPixelsY);
@@ -813,6 +839,54 @@ const ShirtDesigner = () => {
             } else {
               updateTextElement(element.id, 'offsetX', newOffsetX);
               updateTextElement(element.id, 'offsetY', newOffsetY);
+            }
+          } else if (currentHandle === 'rotate') {
+            const pos = get2DPositionFromElement(element);
+            const angle = Math.atan2(y - pos.y, x - pos.x);
+            const rotation = rotateStart.current.elementRotation + (angle - rotateStart.current.angle);
+            if (element.type === 'image') {
+              updateImageElement(element.id, 'rotation', rotation);
+            } else {
+              updateTextElement(element.id, 'rotation', rotation);
+            }
+          } else if (currentHandle.startsWith('scale-')) {
+            const pos = get2DPositionFromElement(element);
+            const distance = Math.sqrt((x - pos.x) ** 2 + (y - pos.y) ** 2);
+            const scaleFactor = distance / scaleStart.current.distance;
+            const newScale = Math.max(0.02, Math.min(0.8, scaleStart.current.elementScale * scaleFactor));
+            if (element.type === 'image') {
+              updateImageElement(element.id, 'scale', newScale);
+              updateImageElement(element.id, 'scaleX', newScale);
+              let aspectRatio = 1;
+              if (element.texture?.image) {
+                aspectRatio = element.texture.image.height / element.texture.image.width;
+              }
+              updateImageElement(element.id, 'scaleY', newScale * aspectRatio);
+            } else {
+              updateTextElement(element.id, 'scale', newScale);
+              updateTextElement(element.id, 'scaleX', newScale);
+              updateTextElement(element.id, 'scaleY', newScale * 0.3);
+            }
+          } else if (currentHandle.startsWith('edge-')) {
+            const deltaX = x - scaleStart.current.startX;
+            const deltaY = y - scaleStart.current.startY;
+            const pixelToScale = 1 / (viewerRef.current.clientHeight / 2);
+            if (currentHandle === 'edge-n' || currentHandle === 'edge-s') {
+              const deltaScale = (currentHandle === 'edge-n' ? -deltaY : deltaY) * pixelToScale;
+              const newHeight = Math.max(0.02, Math.min(0.8, scaleStart.current.height + deltaScale));
+              if (element.type === 'image') {
+                updateImageElement(element.id, 'scaleY', newHeight);
+              } else {
+                updateTextElement(element.id, 'scaleY', newHeight);
+              }
+            } else if (currentHandle === 'edge-w' || currentHandle === 'edge-e') {
+              const deltaScale = (currentHandle === 'edge-w' ? -deltaX : deltaX) * pixelToScale;
+              const newWidth = Math.max(0.02, Math.min(0.8, scaleStart.current.width + deltaScale));
+              if (element.type === 'image') {
+                updateImageElement(element.id, 'scaleX', newWidth);
+              } else {
+                updateTextElement(element.id, 'scaleX', newWidth);
+              }
             }
           }
         } else if (isTouchActive.current && modelRef.current) {
@@ -1114,7 +1188,7 @@ const ShirtDesigner = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex flex-col lg:flex-row">
-      <div className="flex-1 lg:h-screen sticky top-0 overflow-hidden">
+      <div className="h-[50vh] lg:flex-1 lg:h-screen overflow-hidden z-10">
         <div className="h-full w-full bg-white rounded-none shadow-lg overflow-hidden flex items-center justify-center">
           <div ref={viewerRef} className="w-full h-full bg-gradient-to-br from-slate-50 to-slate-100 relative touch-none">
             {isLoadingModel && (
@@ -1132,7 +1206,7 @@ const ShirtDesigner = () => {
         </div>
       </div>
 
-      <div className="w-full lg:w-96 p-6 bg-white shadow-lg overflow-y-auto max-h-screen">
+      <div className="h-[50vh] lg:h-screen w-full lg:w-96 p-6 bg-white shadow-lg overflow-y-auto z-0">
         <h2 className="text-2xl font-bold text-slate-900 mb-6">Diseñador 3D</h2>
 
         <div className="space-y-6">

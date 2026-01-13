@@ -205,7 +205,7 @@ const OrderPage = () => {
     //message += `\nEl precio final se confirmará al recibir todos los archivos.\n\n`;
     message += `¡Gracias por tu preferencia!`;
 
-    const whatsappNumber = "524622723267";
+    const whatsappNumber = "524622125407"; // Número de WhatsApp del negocio
     const whatsappURL = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`;
 
     window.open(whatsappURL, '_blank');
