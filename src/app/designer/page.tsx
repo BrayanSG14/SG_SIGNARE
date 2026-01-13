@@ -122,10 +122,10 @@ const ShirtDesigner = () => {
 
   const shirtColors = [
     { color: '#ffffff', name: 'Blanco' },
-    { color: '#646464ff', name: 'Gris' },
-    { color: '#2d2d2dff', name: 'Grafito' },
-    { color: '#121212ff', name: 'Negro' },
-    { color: '#00162d', name: 'Azul Noche' }
+    { color: 'rgb(128, 128, 128)', name: 'Gris' },
+    //{ color: '#2d2d2dff', name: 'Grafito' },
+    { color: 'rgb(11, 11, 11)', name: 'Negro' },
+    //{ color: '#00162d', name: 'Azul Noche' }
   ];
 
   const fabricTypes = [
