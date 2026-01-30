@@ -85,14 +85,13 @@ export default function HomePage() {
             className="text-center mb-16"
           >
             <h2 className="text-3xl md:text-4xl font-bold mb-4">
-              No Compres Camisas Genéricas.
+              Deja de Comprar Camisas Comunes.
               <span className="block text-[#748c94] text-3xl md:text-5xl mt-2">
-                Créalas.
+                Diseña la tuya, única y exclusiva.
               </span>
             </h2>
             <p className="text-lg text-[#748c94] max-w-2xl mx-auto">
-              No ofrecemos opciones prediseñadas. Ofrecemos control.
-              Cada camisa se hace respetando tu diseño, sin cambios ni interpretaciones.
+              No ofrecemos opciones prediseñadas. Te damos el control total para crear una camisa que refleje tu estilo, sin compromisos ni limitaciones.
             </p>
           </motion.div>
 
