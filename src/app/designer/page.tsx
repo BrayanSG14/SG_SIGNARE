@@ -4,6 +4,14 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 
+// --- CONSTANTES DE TALLAS (Medidas aproximadas en CM) ---
+const SHIRT_SPECS = {
+  S: { width: 46, height: 70, label: 'Chica (S)' },
+  M: { width: 51, height: 72, label: 'Mediana (M)' },
+  L: { width: 56, height: 74, label: 'Grande (L)' },
+  XL: { width: 61, height: 76, label: 'Extra Grande (XL)' }
+};
+
 // --- COMPONENTE: Selector de Fuentes con Vista Previa ---
 const FontSelector = ({ options, value, onChange }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -66,6 +74,37 @@ const FontSelector = ({ options, value, onChange }) => {
   );
 };
 
+// --- COMPONENTE: Guías de Medidas Visuales ---
+const DimensionGuides = ({ sizeSpec }) => {
+  return (
+    <div className="absolute inset-0 pointer-events-none flex items-center justify-center z-0">
+      <div className="relative w-[60%] h-[70%] border-slate-300">
+        {/* Línea Vertical (Alto) */}
+        <div className="absolute right-[-20px] top-0 bottom-0 flex items-center">
+          <div className="h-full w-px bg-slate-400 relative">
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-3 h-px bg-slate-400"></div>
+            <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-3 h-px bg-slate-400"></div>
+            <div className="absolute top-1/2 left-2 -translate-y-1/2 bg-white/80 px-1 py-0.5 rounded text-xs font-bold text-slate-600 whitespace-nowrap shadow-sm border border-slate-200">
+              {sizeSpec.height} cm
+            </div>
+          </div>
+        </div>
+
+        {/* Línea Horizontal (Ancho) */}
+        <div className="absolute bottom-[-20px] left-0 right-0 flex justify-center">
+          <div className="w-full h-px bg-slate-400 relative">
+            <div className="absolute left-0 top-1/2 -translate-y-1/2 h-3 w-px bg-slate-400"></div>
+            <div className="absolute right-0 top-1/2 -translate-y-1/2 h-3 w-px bg-slate-400"></div>
+            <div className="absolute left-1/2 bottom-2 -translate-x-1/2 bg-white/80 px-1 py-0.5 rounded text-xs font-bold text-slate-600 whitespace-nowrap shadow-sm border border-slate-200">
+              {sizeSpec.width} cm
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 
 const ShirtDesigner = () => {
 
@@ -91,6 +130,8 @@ const ShirtDesigner = () => {
   const [isFabricSectionOpen, setIsFabricSectionOpen] = useState(true);
   const [isSizeSectionOpen, setIsSizeSectionOpen] = useState(true);
   const [isQuantitySectionOpen, setIsQuantitySectionOpen] = useState(true);
+  
+  // Talla inicial
   const [currentSize, setCurrentSize] = useState('M');
   const [quantity, setQuantity] = useState(1);
   
@@ -110,7 +151,8 @@ const ShirtDesigner = () => {
   const selectedElementRef = useRef(null);
   const activeHandleRef = useRef(null);
 
-  const SCALE_TO_CM = 50;
+  // Variable de referencia para dimensiones de la textura
+  const CANVAS_SIZE = 2048;
 
   useEffect(() => {
     selectedElementRef.current = selectedElement;
@@ -123,71 +165,37 @@ const ShirtDesigner = () => {
   const shirtColors = [
     { color: '#ffffff', name: 'Blanco' },
     { color: 'rgb(128, 128, 128)', name: 'Gris' },
-    //{ color: '#2d2d2dff', name: 'Grafito' },
     { color: 'rgb(11, 11, 11)', name: 'Negro' },
-    //{ color: '#00162d', name: 'Azul Noche' }
   ];
 
   const fabricTypes = [
     { id: 'algodon', name: 'Algodón', image: '/models/algodon.jpeg' },
-    //{ id: 'poliester', name: 'Poliéster', image: '/models/poliester.jpeg' },
-    //{ id: 'mezcla', name: 'Mezcla', image: '/models/algodon-poliester.jpeg' },
-    //{ id: 'premium', name: 'Premium', image: '/models/premium.jpeg' }
   ];
 
-  // --- LISTA DE FUENTES DEFINITIVA, INSPIRADA EN LA IMAGEN ---
   const fontFamilies = [
     {
       label: 'Script & Cursivas Finas',
-      fonts: [
-        'Great Vibes',    // Alternativa a Hello Stockholm
-        'Sacramento',     // Alternativa a Fox in the Snow
-        'Allura',         // Alternativa a Graced Script, Biloxi
-        'Kalam',          // Alternativa a Ting Tong
-        'Dancing Script',
-        'Caveat'
-      ]
+      fonts: ['Great Vibes', 'Sacramento', 'Allura', 'Kalam', 'Dancing Script', 'Caveat']
     },
     {
       label: 'Script con Personalidad',
-      fonts: [
-        'Damion',         // Fuente original de la imagen
-        'Pacifico',       // Alternativa a Buffalo Script
-        'Lobster',
-        'Permanent Marker', // Alternativa a Taken by Vultures
-        'Rock Salt'
-      ]
+      fonts: ['Damion', 'Pacifico', 'Lobster', 'Permanent Marker', 'Rock Salt']
     },
     {
       label: 'Serif Modernas & Clásicas',
-      fonts: [
-        'Playfair Display', // Alternativa a Soria
-        'Lora',
-        'Arvo',
-        'Roboto Slab',    // Alternativa a Eponymous
-        'Cormorant Garamond'
-      ]
+      fonts: ['Playfair Display', 'Lora', 'Arvo', 'Roboto Slab', 'Cormorant Garamond']
     },
     {
       label: 'Sans Serif de Impacto',
-      fonts: [
-        'Bebas Neue',     // Alternativa a Lovelo, Canter, Blanch
-        'Oswald',         // Alternativa a Gogoia
-        'Anton',
-        'Montserrat',
-        'Raleway'
-      ]
+      fonts: ['Bebas Neue', 'Oswald', 'Anton', 'Montserrat', 'Raleway']
     },
     {
       label: 'Decorativas & Unicas',
-      fonts: [
-        'Cinzel Decorative', // Alternativa a Paihuen Mapuche
-        'Josefin Sans',      // Alternativa a Norse (estilo delgado)
-        'Indie Flower'
-      ]
+      fonts: ['Cinzel Decorative', 'Josefin Sans', 'Indie Flower']
     }
   ];
 
+  // --- CALCULO DE DIMENSIONES DINÁMICO ---
   const getElementDimensionsInCm = (element) => {
     let aspectRatio = 1;
     if (element.type === 'image' && element.texture?.image) {
@@ -196,11 +204,57 @@ const ShirtDesigner = () => {
       aspectRatio = 0.3;
     }
     
-    const width = (element.scaleX || element.scale) * SCALE_TO_CM;
-    const height = (element.scaleY || (element.scale * aspectRatio)) * SCALE_TO_CM;
+    // Obtener el ancho de la camiseta actual en cm
+    const shirtWidthCm = SHIRT_SPECS[currentSize].width;
     
-    return { width: width.toFixed(1), height: height.toFixed(1) };
+    // Calcular factor de conversión: 
+    // El canvas (2048px) representa el ancho completo de la textura. 
+    // Asumimos que el área visible del pecho es aprox el 50% del ancho de la textura UV.
+    // Ajuste empírico: element.scaleX es relativo a (canvasSize/2).
+    // Si scaleX es 1, el elemento mide 1024px.
+    // Proporción del ancho total (2048) = 0.5.
+    // Ancho físico = 0.5 * shirtWidthCm.
+    
+    const elementPixelWidth = (element.scaleX || element.scale) * (CANVAS_SIZE / 2);
+    const widthRatio = elementPixelWidth / CANVAS_SIZE; 
+    
+    // Ajustamos la escala para que sea realista. Multiplicamos por 2 para compensar la escala interna
+    const widthCm = widthRatio * shirtWidthCm * 2; 
+    const heightCm = widthCm * (element.scaleY / element.scaleX);
+    
+    return { width: widthCm.toFixed(1), height: heightCm.toFixed(1) };
   };
+
+  // --- FUNCIÓN PARA CAMBIAR TALLA Y AJUSTAR ELEMENTOS ---
+  const changeSize = (newSize) => {
+    if (newSize === currentSize) return;
+
+    const oldWidth = SHIRT_SPECS[currentSize].width;
+    const newWidth = SHIRT_SPECS[newSize].width;
+    
+    // Calculamos el ratio: Si la camisa crece (S -> L), el ratio es < 1, 
+    // por lo tanto la imagen ocupa menos % de la tela (se ve más chica relativamente)
+    const ratio = oldWidth / newWidth;
+
+    // Actualizar imágenes
+    setImageElements(prev => prev.map(el => ({
+      ...el,
+      scale: el.scale * ratio,
+      scaleX: el.scaleX * ratio,
+      scaleY: el.scaleY * ratio
+    })));
+
+    // Actualizar textos
+    setTextElements(prev => prev.map(el => ({
+      ...el,
+      scale: el.scale * ratio,
+      scaleX: el.scaleX * ratio,
+      scaleY: el.scaleY * ratio
+    })));
+
+    setCurrentSize(newSize);
+  };
+
 
   useEffect(() => {
     if (!viewerRef.current) return;
@@ -217,7 +271,7 @@ const ShirtDesigner = () => {
     camera.position.set(0, 0, 5);
     cameraRef.current = camera;
 
-    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
     renderer.setSize(width, height);
     renderer.shadowMap.enabled = true;
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
@@ -274,8 +328,8 @@ const ShirtDesigner = () => {
 
     const canvas = document.createElement('canvas');
     const ctx = canvas.getContext('2d');
-    canvas.width = 2048;
-    canvas.height = 2048;
+    canvas.width = CANVAS_SIZE;
+    canvas.height = CANVAS_SIZE;
 
     ctx.fillStyle = currentShirtColor;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -475,7 +529,7 @@ const ShirtDesigner = () => {
 
   const getClickedHandleFromUV = (clickU, clickV, element) => {
     if (!element) return null;
-    const canvasSize = 2048;
+    const canvasSize = CANVAS_SIZE;
     const designAreaHeight = canvasSize / 2;
     const designAreaCenterY = element.side === 'front' ? canvasSize * 0.75 : canvasSize * 0.25;
     const pixelScale = designAreaHeight;
@@ -1188,9 +1242,9 @@ const ShirtDesigner = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex flex-col lg:flex-row">
-      <div className="h-[50vh] lg:flex-1 lg:h-screen overflow-hidden z-10">
-        <div className="h-full w-full bg-white rounded-none shadow-lg overflow-hidden flex items-center justify-center">
-          <div ref={viewerRef} className="w-full h-full bg-gradient-to-br from-slate-50 to-slate-100 relative touch-none">
+      <div className="h-[50vh] lg:flex-1 lg:h-screen overflow-hidden z-10 relative">
+        <div className="h-full w-full bg-white rounded-none shadow-lg overflow-hidden flex items-center justify-center relative">
+          <div ref={viewerRef} className="w-full h-full bg-gradient-to-br from-slate-50 to-slate-100 relative touch-none z-10">
             {isLoadingModel && (
               <div className="absolute inset-0 flex flex-col items-center justify-center text-slate-500 z-10">
                 <div className="animate-spin w-12 h-12 border-4 border-slate-300 border-t-slate-600 rounded-full mb-4"></div>
@@ -1203,15 +1257,20 @@ const ShirtDesigner = () => {
               </div>
             )}
           </div>
+          
+          {/* Overlay de Guías de Dimensiones */}
+          {isModelLoaded && <DimensionGuides sizeSpec={SHIRT_SPECS[currentSize]} />}
+          
         </div>
       </div>
 
-      <div className="h-[50vh] lg:h-screen w-full lg:w-96 p-6 bg-white shadow-lg overflow-y-auto z-0">
+      <div className="h-[50vh] lg:h-screen w-full lg:w-96 p-6 bg-white shadow-lg overflow-y-auto z-10">
         <h2 className="text-2xl font-bold text-slate-900 mb-6">Diseñador 3D</h2>
 
         <div className="space-y-6">
           {isModelLoaded && (
             <>
+              {/* Sección de Color (Sin Cambios) */}
               <div className="bg-white rounded-xl shadow-sm p-6 border border-slate-200">
                 <button onClick={() => setIsColorSectionOpen(!isColorSectionOpen)} className="w-full flex justify-between items-center text-left">
                   <h3 className="text-lg font-semibold text-slate-900">Color de la Camisa</h3>
@@ -1236,6 +1295,7 @@ const ShirtDesigner = () => {
                 </div>
               </div>
 
+              {/* Sección de Tela (Sin Cambios) */}
               <div className="bg-white rounded-xl shadow-sm p-6 border border-slate-200">
                 <button onClick={() => setIsFabricSectionOpen(!isFabricSectionOpen)} className="w-full flex justify-between items-center text-left">
                   <h3 className="text-lg font-semibold text-slate-900">Tipos de Tela</h3>
@@ -1275,6 +1335,7 @@ const ShirtDesigner = () => {
                 </div>
               </div>
 
+              {/* Sección de Talla (MODIFICADA: Llama a changeSize) */}
               <div className="bg-white rounded-xl shadow-sm p-6 border border-slate-200">
                 <button onClick={() => setIsSizeSectionOpen(!isSizeSectionOpen)} className="w-full flex justify-between items-center text-left">
                   <h3 className="text-lg font-semibold text-slate-900">Talla</h3>
@@ -1287,7 +1348,7 @@ const ShirtDesigner = () => {
                     {shirtSizes.map((size) => (
                       <button
                         key={size}
-                        onClick={() => setCurrentSize(size)}
+                        onClick={() => changeSize(size)}
                         className={`py-3 rounded-lg border-2 text-sm font-bold transition-all ${
                           currentSize === size ? 'bg-slate-800 text-white border-slate-800 shadow-lg scale-105' : 'bg-white text-slate-700 border-slate-300 hover:border-slate-500'
                         }`}
@@ -1296,9 +1357,13 @@ const ShirtDesigner = () => {
                       </button>
                     ))}
                   </div>
+                  <p className="mt-2 text-xs text-slate-500 text-center">
+                    Dimensiones: {SHIRT_SPECS[currentSize].width}cm ancho x {SHIRT_SPECS[currentSize].height}cm alto
+                  </p>
                 </div>
               </div>
 
+              {/* Sección de Cantidad (Sin Cambios) */}
               <div className="bg-white rounded-xl shadow-sm p-6 border border-slate-200">
                 <button onClick={() => setIsQuantitySectionOpen(!isQuantitySectionOpen)} className="w-full flex justify-between items-center text-left">
                   <h3 className="text-lg font-semibold text-slate-900">Cantidad</h3>
@@ -1335,6 +1400,7 @@ const ShirtDesigner = () => {
                 </div>
               </div>
 
+              {/* Añadir Elementos (Sin Cambios) */}
               <div className="bg-white rounded-xl shadow-sm p-6 border border-slate-200">
                 <h3 className="text-lg font-semibold text-slate-900 mb-4">Añadir Elementos</h3>
                 <div className="grid grid-cols-2 gap-3">
@@ -1355,6 +1421,7 @@ const ShirtDesigner = () => {
                 </div>
               </div>
 
+              {/* Editor de Elemento Seleccionado */}
               {selectedElementData && (
                 <div className="bg-blue-50 rounded-xl shadow-sm p-6 border-2 border-blue-300">
                   <div className="flex items-center justify-between mb-4">
@@ -1376,14 +1443,16 @@ const ShirtDesigner = () => {
                   </div>
                   
                   <div className="space-y-4">
-                    {selectedElementData.type === 'image' && selectedElementData.texture && (
-                      <div className="bg-white rounded-lg p-3 border border-blue-200">
-                        <div className="text-xs font-medium text-slate-600 mb-1">Dimensiones:</div>
-                        <div className="text-lg font-bold text-blue-600">
-                          {getElementDimensionsInCm(selectedElementData).width} × {getElementDimensionsInCm(selectedElementData).height} cm
-                        </div>
+                    {/* Dimensiones dinámicas */}
+                    <div className="bg-white rounded-lg p-3 border border-blue-200">
+                      <div className="text-xs font-medium text-slate-600 mb-1">Dimensiones reales:</div>
+                      <div className="text-lg font-bold text-blue-600">
+                        {getElementDimensionsInCm(selectedElementData).width} × {getElementDimensionsInCm(selectedElementData).height} cm
                       </div>
-                    )}
+                      <div className="text-[10px] text-slate-400 mt-1">
+                        Ajustado para talla {currentSize}
+                      </div>
+                    </div>
                     
                     <div>
                       <label className="block text-sm font-medium text-slate-700 mb-2">Lado de la camisa:</label>
