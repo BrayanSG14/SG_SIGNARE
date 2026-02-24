@@ -331,12 +331,12 @@ const OrderPage = () => {
                   </button>
                 </div>
                 
-                <div className="relative aspect-square bg-[#faf7f3] rounded-lg overflow-hidden border border-[#c9d1d4]">
+                <div className="bg-[#faf7f3] rounded-lg border border-[#c9d1d4] flex items-center justify-center p-2">
                   {design[`${showImagePreview}Image`] ? (
                     <img 
                       src={design[`${showImagePreview}Image`]} 
                       alt={`Diseño ${showImagePreview}`} 
-                      className="w-full h-full object-contain"
+                      className="w-full h-auto object-contain rounded-md"
                     />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center text-[#c9d1d4]">
@@ -454,7 +454,7 @@ const OrderPage = () => {
                     Información Personal
                   </h3>
                   <div>
-                    <label htmlFor="clientName" className="block text-sm font-medium text-[#748c94] mb-2">
+                    <label htmlFor="clientName" className="block text-sm font-semibold text-slate-700 mb-2">
                       Nombre Completo *
                     </label>
                     <input
@@ -462,7 +462,7 @@ const OrderPage = () => {
                       id="clientName"
                       value={clientName}
                       onChange={(e) => setClientName(e.target.value)}
-                      className={`w-full px-4 py-3 bg-white border-2 rounded-md focus:ring-1 focus:ring-[#00162d] focus:border-[#00162d] transition-all ${
+                      className={`w-full px-4 py-3 bg-white text-black border-2 rounded-md focus:ring-1 focus:ring-[#00162d] focus:border-[#00162d] transition-all ${
                         formErrors.clientName ? 'border-red-500' : 'border-[#c9d1d4]'
                       }`}
                       placeholder="Ingresar aquí su nombre..."
@@ -529,7 +529,7 @@ const OrderPage = () => {
                           onClick={() => setPreferredDelivery('pickup')}
                           className={`p-4 rounded-lg border-2 transition-all ${
                             preferredDelivery === 'pickup'
-                              ? 'border-blue-600 bg-blue-50 shadow-md'
+                              ? 'border-[#00162d] bg-blue-50 shadow-md'
                               : 'border-slate-300 hover:border-slate-400'
                           }`}
                           disabled={isSubmitting}
@@ -547,7 +547,7 @@ const OrderPage = () => {
                         onClick={() => setPreferredDelivery('delivery')}
                         className={`p-4 rounded-lg border-2 transition-all ${
                           preferredDelivery === 'delivery'
-                            ? 'border-blue-600 bg-blue-50 shadow-md'
+                            ? 'border-[#00162d] bg-blue-50 shadow-md'
                             : 'border-slate-300 hover:border-slate-400'
                         }`}
                         disabled={isSubmitting}
@@ -572,7 +572,7 @@ const OrderPage = () => {
                         value={shippingAddress}
                         onChange={(e) => setShippingAddress(e.target.value)}
                         rows={3}
-                        className={`w-full px-4 py-3 border-2 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all ${
+                        className={`w-full px-4 py-3 text-black border-2 rounded-lg shadow-sm focus:ring-1 focus:ring-[#00162d] focus:border-[#00162d] transition-all ${
                           formErrors.shippingAddress ? 'border-red-500' : 'border-slate-300'
                         }`}
                         placeholder="Calle, número, colonia, código postal, ciudad"
@@ -654,7 +654,7 @@ const OrderPage = () => {
                       value={additionalNotes}
                       onChange={(e) => setAdditionalNotes(e.target.value)}
                       rows={4}
-                      className="w-full px-4 py-3 border-2 border-slate-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+                      className="w-full px-4 py-3 text-black border-2 border-slate-300 rounded-lg shadow-sm focus:ring-1 focus:ring-[#00162d] focus:border-[#00162d] transition-all"
                       placeholder="Ejemplo: Prefiero tonos más oscuros, el texto debe ser muy legible, necesito factura, etc."
                       disabled={isSubmitting}
                     />
@@ -704,7 +704,7 @@ const OrderPage = () => {
                     )}
                   </button>
                   <div className="mt-4 text-center">
-                    <a href="/" className="text-sm text-[#748c94] hover:text-[#00162d] underline transition-colors">
+                    <a href="/designer" className="text-sm text-[#748c94] hover:text-[#00162d] underline transition-colors">
                       ← Volver al diseñador
                     </a>
                   </div>

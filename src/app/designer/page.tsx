@@ -1189,13 +1189,41 @@ const ShirtDesigner = () => {
       const originalRotationY = modelRef.current.rotation.y;
       const isAnythingSelected = !!selectedElementRef.current;
       if (isAnythingSelected) setSelectedElement(null);
+
+      // Guardar estado original
+      const originalCameraZ = cameraRef.current.position.z;
+      const originalCameraX = cameraRef.current.position.x;
+      const originalCameraY = cameraRef.current.position.y;
+      const originalAspect = cameraRef.current.aspect;
+
+      const CAPTURE_SIZE = 900; // resolución cuadrada fija para captura
+
       modelRef.current.rotation.y = rotationY;
+
+      // Configurar cámara y renderer para captura cuadrada
+      rendererRef.current.setSize(CAPTURE_SIZE, CAPTURE_SIZE);
+      cameraRef.current.aspect = 1; // aspecto cuadrado
+      cameraRef.current.position.set(0, 0, 1.5);
+      cameraRef.current.updateProjectionMatrix();
+
       setTimeout(() => {
         rendererRef.current.render(sceneRef.current, cameraRef.current);
         const dataURL = rendererRef.current.domElement.toDataURL('image/png');
+
+        // Restaurar todo al estado original
         modelRef.current.rotation.y = originalRotationY;
+        cameraRef.current.position.set(originalCameraX, originalCameraY, originalCameraZ);
+        cameraRef.current.aspect = originalAspect;
+        cameraRef.current.updateProjectionMatrix();
+
+        // Restaurar tamaño original del renderer
+        const viewer = rendererRef.current.domElement.parentElement;
+        if (viewer) {
+          rendererRef.current.setSize(viewer.clientWidth, viewer.clientHeight);
+        }
+
         resolve(dataURL);
-      }, 50);
+      }, 80);
     });
   };
 
@@ -1284,8 +1312,8 @@ const ShirtDesigner = () => {
                       <button
                         key={color}
                         onClick={() => changeColor(color)}
-                        className={`w-12 h-12 rounded-lg border-2 transition-all ${
-                          currentShirtColor === color ? 'border-slate-800 scale-110 shadow-lg' : 'border-slate-300 hover:border-slate-400'
+                        className={`w-10 h-10 rounded-lg border-2 transition-all ${
+                          currentShirtColor === color ? 'border-slate-800 scale-100 shadow-lg' : 'border-slate-300 hover:border-slate-400'
                         }`}
                         style={{ backgroundColor: color }}
                         title={name}
@@ -1310,7 +1338,7 @@ const ShirtDesigner = () => {
                         key={id}
                         onClick={() => changeFabric(id)}
                         className={`relative overflow-hidden rounded-lg border-2 transition-all ${
-                          currentFabric === id ? 'border-slate-800 shadow-lg scale-105' : 'border-slate-300 hover:border-slate-400'
+                          currentFabric === id ? 'border-slate-800 shadow-lg scale-100' : 'border-slate-300 hover:border-slate-400'
                         }`}
                       >
                         <div className="aspect-square bg-slate-100 flex items-center justify-center">
@@ -1350,7 +1378,7 @@ const ShirtDesigner = () => {
                         key={size}
                         onClick={() => changeSize(size)}
                         className={`py-3 rounded-lg border-2 text-sm font-bold transition-all ${
-                          currentSize === size ? 'bg-slate-800 text-white border-slate-800 shadow-lg scale-105' : 'bg-white text-slate-700 border-slate-300 hover:border-slate-500'
+                          currentSize === size ? 'bg-slate-800 text-white border-slate-800 shadow-lg scale-100' : 'bg-white text-slate-700 border-slate-300 hover:border-slate-500'
                         }`}
                       >
                         {size}
@@ -1406,24 +1434,24 @@ const ShirtDesigner = () => {
                 <div className="grid grid-cols-2 gap-3">
                   <button
                     onClick={addImage}
-                    className="bg-blue-600 text-white px-4 py-3 rounded-lg font-medium hover:bg-blue-700 transition-colors flex items-center justify-center gap-2"
+                    className="bg-gradient-to-r from-[#00162d]/80 to-[#faf7f3]/80 text-white px-4 py-3 rounded-lg font-medium hover:opacity-80 border-1 border-[#00162d] transition-colors flex items-center justify-center gap-2"
                   >
-                    <span className="text-xl">🖼️</span>
                     Imagen
+                    <span className="text-xl">🖼️</span>
                   </button>
                   <button
                     onClick={addText}
-                    className="bg-green-600 text-white px-4 py-3 rounded-lg font-medium hover:bg-green-700 transition-colors flex items-center justify-center gap-2"
+                    className="bg-gradient-to-r from-[#00162d]/80 to-[#faf7f3]/80 text-white px-4 py-3 rounded-lg font-medium hover:opacity-80 border-1 border-[#00162d] transition-colors flex items-center justify-center gap-2"
                   >
-                    <span className="text-xl">📝</span>
                     Texto
+                    <span className="text-xl">📝</span>
                   </button>
                 </div>
               </div>
 
               {/* Editor de Elemento Seleccionado */}
               {selectedElementData && (
-                <div className="bg-blue-50 rounded-xl shadow-sm p-6 border-2 border-blue-300">
+                <div className="bg-blue-50 rounded-xl shadow-sm p-6 border-2 border-[#00162d]">
                   <div className="flex items-center justify-between mb-4">
                     <h3 className="text-lg font-semibold text-slate-900">
                       {selectedElementData.type === 'image' ? '🖼️ Imagen' : '📝 Texto'} #{selectedElementData.id}
@@ -1458,7 +1486,7 @@ const ShirtDesigner = () => {
                       <label className="block text-sm font-medium text-slate-700 mb-2">Lado de la camisa:</label>
                       <button
                         onClick={() => toggleElementSide(selectedElementData.id, selectedElementData.type)}
-                        className="w-full bg-white border-2 border-blue-400 rounded-lg px-4 py-3 text-sm font-medium text-blue-700 hover:bg-blue-50 transition-colors"
+                        className="w-full bg-white border-2 border-[#00162d] rounded-lg px-4 py-3 text-sm font-medium text-blue-700 hover:bg-blue-50 transition-colors"
                       >
                         {selectedElementData.side === 'front' ? '👕 Frente' : '🔄 Parte trasera'}
                         <span className="ml-2 text-xs">• Click para cambiar</span>
@@ -1474,14 +1502,14 @@ const ShirtDesigner = () => {
                             onChange={(e) => loadImageTexture(selectedElementData.id, e)}
                             className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                           />
-                          <div className="border-2 border-dashed border-blue-400 rounded-lg px-4 py-3 text-sm text-blue-700 hover:border-blue-500 transition-colors text-center font-medium">
+                          <div className="border-2 border-dashed border-[#00162d] rounded-lg px-4 py-3 text-sm text-blue-700 hover:border-blue-500 transition-colors text-center font-medium">
                             {selectedElementData.texture ? '✓ Cambiar imagen' : '📂 Cargar imagen'}
                           </div>
                         </div>
                         
                         <button
                           onClick={() => toggleFlipImage(selectedElementData.id)}
-                          className="w-full bg-purple-600 text-white rounded-lg px-4 py-3 text-sm font-medium hover:bg-purple-700 transition-colors flex items-center justify-center gap-2"
+                          className="w-full bg-white text-black rounded-lg px-4 py-3 text-sm font-medium hover:bg-blue-50 border-2 border-[#00162d] transition-colors flex items-center justify-center gap-2"
                         >
                           <span className="text-lg">↔️</span>
                           {selectedElementData.flipped ? 'Desactivar espejo' : 'Activar espejo'}
@@ -1619,7 +1647,7 @@ const ShirtDesigner = () => {
 
               <button
                 onClick={captureAndRedirectToOrderPage}
-                className="w-full bg-gradient-to-r from-blue-600 to-blue-700 text-white py-4 rounded-xl font-bold text-lg hover:from-blue-700 hover:to-blue-800 transition-all shadow-lg hover:shadow-xl"
+                className="w-full bg-[#00162d] text-white py-4 rounded-xl font-bold text-lg hover:bg-[#00162d] ring-2 ring-[#faf7f3] transition-all shadow-lg hover:shadow-xl"
               >
                 🛒 Hacer Pedido
               </button>
