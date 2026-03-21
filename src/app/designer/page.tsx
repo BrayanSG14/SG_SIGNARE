@@ -154,6 +154,20 @@ const ShirtDesigner = () => {
   // Variable de referencia para dimensiones de la textura
   const CANVAS_SIZE = 2048;
 
+  // Cargar todas las tipografías de moda desde Google Fonts
+  useEffect(() => {
+    const googleFontsUrl =
+      'https://fonts.googleapis.com/css2?family=Cormorant:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Bodoni+Moda:ital,wght@0,400;0,600;1,400&family=DM+Serif+Display:ital@0;1&family=Fraunces:ital,wght@0,300;0,400;1,300&family=Cinzel:wght@400;600;700&family=Cinzel+Decorative:wght@400;700&family=Tenor+Sans&family=Josefin+Sans:ital,wght@0,100;0,300;0,400;1,100;1,300&family=Poiret+One&family=Raleway:ital,wght@0,100;0,300;0,400;1,100;1,300&family=Montserrat:ital,wght@0,100;0,300;0,400;1,100&family=Jost:ital,wght@0,100;0,300;0,400;1,100&family=Outfit:wght@100;300;400&family=Urbanist:ital,wght@0,100;0,300;0,400;1,100&family=Nunito+Sans:wght@200;300;400&family=Bebas+Neue&family=Great+Vibes&family=Sacramento&family=Allura&family=Pinyon+Script&family=Petit+Formal+Script&family=Italianno&family=Dancing+Script:wght@400;700&family=Parisienne&family=Alex+Brush&family=Carattere&family=Clicker+Script&family=Damion&family=Oswald:wght@200;300;400;500&family=Barlow+Condensed:ital,wght@0,100;0,300;0,400;1,100&family=Anton&family=Big+Shoulders+Display:wght@100;300;400;700&family=Fjalla+One&family=Pathway+Gothic+One&family=Lora:ital,wght@0,400;0,600;1,400&family=EB+Garamond:ital,wght@0,400;0,600;1,400&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Cardo:ital,wght@0,400;0,700;1,400&family=Spectral:ital,wght@0,300;0,400;1,300&family=Arvo:ital,wght@0,400;0,700;1,400&display=swap';
+    const existingLink = document.getElementById('fashion-google-fonts');
+    if (!existingLink) {
+      const link = document.createElement('link');
+      link.id = 'fashion-google-fonts';
+      link.rel = 'stylesheet';
+      link.href = googleFontsUrl;
+      document.head.appendChild(link);
+    }
+  }, []);
+
   useEffect(() => {
     selectedElementRef.current = selectedElement;
   }, [selectedElement]);
@@ -174,24 +188,32 @@ const ShirtDesigner = () => {
 
   const fontFamilies = [
     {
-      label: 'Script & Cursivas Finas',
-      fonts: ['Great Vibes', 'Sacramento', 'Allura', 'Kalam', 'Dancing Script', 'Caveat']
+      label: '✦ Alta Moda — Serif de Lujo',
+      fonts: ['Cormorant', 'Cormorant Garamond', 'Playfair Display', 'Bodoni Moda', 'DM Serif Display', 'Fraunces']
     },
     {
-      label: 'Script con Personalidad',
-      fonts: ['Damion', 'Pacifico', 'Lobster', 'Permanent Marker', 'Rock Salt']
+      label: '✦ Editorial — Estilo Vogue & Dior',
+      fonts: ['Cinzel', 'Cinzel Decorative', 'Tenor Sans', 'Josefin Sans', 'Poiret One', 'Raleway']
     },
     {
-      label: 'Serif Modernas & Clásicas',
-      fonts: ['Playfair Display', 'Lora', 'Arvo', 'Roboto Slab', 'Cormorant Garamond']
+      label: '✦ Minimalismo Chic — Sans Serif',
+      fonts: ['Montserrat', 'Jost', 'Outfit', 'Urbanist', 'Nunito Sans', 'Bebas Neue']
     },
     {
-      label: 'Sans Serif de Impacto',
-      fonts: ['Bebas Neue', 'Oswald', 'Anton', 'Montserrat', 'Raleway']
+      label: '✦ Cursivas Elegantes — Haute Couture',
+      fonts: ['Great Vibes', 'Sacramento', 'Allura', 'Pinyon Script', 'Petit Formal Script', 'Italianno']
     },
     {
-      label: 'Decorativas & Unicas',
-      fonts: ['Cinzel Decorative', 'Josefin Sans', 'Indie Flower']
+      label: '✦ Script con Carácter',
+      fonts: ['Dancing Script', 'Parisienne', 'Alex Brush', 'Carattere', 'Clicker Script', 'Damion']
+    },
+    {
+      label: '✦ Condensadas de Impacto',
+      fonts: ['Oswald', 'Barlow Condensed', 'Anton', 'Big Shoulders Display', 'Fjalla One', 'Pathway Gothic One']
+    },
+    {
+      label: '✦ Clásicas & Atemporales',
+      fonts: ['Lora', 'EB Garamond', 'Libre Baskerville', 'Cardo', 'Spectral', 'Arvo']
     }
   ];
 
@@ -1070,9 +1092,10 @@ const ShirtDesigner = () => {
       id,
       type: 'text',
       text: 'Texto ejemplo',
-      fontSize: 48,
       fontFamily: 'Great Vibes', // Fuente por defecto más estilizada
       color: '#000000',
+      outline: false,
+      outlineWidth: 2,
       scale: 0.2,
       scaleX: 0.2,
       scaleY: 0.06,
@@ -1167,16 +1190,44 @@ const ShirtDesigner = () => {
     const pixelOffsetY = element.offsetY * pixelScale;
     const centerX = canvasWidth / 2 + pixelOffsetX;
     const centerY = designAreaCenterY - pixelOffsetY;
-    const fontSize = element.fontSize * element.scale * 2.5;
-    ctx.font = `${fontSize}px ${element.fontFamily}`;
-    ctx.fillStyle = element.color;
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
+
+    // Tamaño base de fuente en píxeles del canvas (constante interna)
+    const BASE_FONT_SIZE = 200;
+    // Escala horizontal y vertical del recuadro en píxeles
+    const boxWidth = (element.scaleX || element.scale) * pixelScale;
+    const boxHeight = (element.scaleY || (element.scale * 0.3)) * pixelScale;
+
     ctx.save();
     ctx.translate(centerX, centerY);
     ctx.rotate(element.rotation || 0);
-    ctx.strokeText(element.text, 0, 0);
-    ctx.fillText(element.text, 0, 0);
+
+    // Medir el texto a tamaño base para calcular el factor de escala
+    ctx.font = `${BASE_FONT_SIZE}px ${element.fontFamily}`;
+    const measuredWidth = ctx.measureText(element.text).width || 1;
+
+    // Escalar el canvas para que el texto llene el recuadro
+    const scaleX = boxWidth / measuredWidth;
+    const scaleY = boxHeight / BASE_FONT_SIZE;
+    ctx.scale(scaleX, scaleY);
+
+    ctx.font = `${BASE_FONT_SIZE}px ${element.fontFamily}`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+
+    if (element.outline) {
+      // Modo OUTLINE: solo contorno, interior transparente
+      const strokeW = (element.outlineWidth || 2) * (BASE_FONT_SIZE / 40);
+      ctx.lineWidth = strokeW;
+      ctx.strokeStyle = element.color;
+      ctx.lineJoin = 'round';
+      ctx.strokeText(element.text, 0, 0);
+      // No fillText → interior vacío
+    } else {
+      // Modo normal: relleno sólido
+      ctx.fillStyle = element.color;
+      ctx.fillText(element.text, 0, 0);
+    }
+
     ctx.restore();
   };
 
@@ -1548,21 +1599,71 @@ const ShirtDesigner = () => {
                             className="w-full h-12 rounded-lg border-2 border-slate-300 cursor-pointer"
                           />
                         </div>
-                        
+
+                        {/* Toggle Outline */}
                         <div>
-                          <label className="block text-sm font-medium text-slate-700 mb-2">
-                            Tamaño fuente: {selectedElementData.fontSize}
-                          </label>
-                          <input
-                            type="range"
-                            min="20"
-                            max="200"
-                            step="2"
-                            value={selectedElementData.fontSize}
-                            onChange={(e) => updateTextElement(selectedElementData.id, 'fontSize', parseFloat(e.target.value))}
-                            className="w-full"
-                          />
+                          <label className="block text-sm font-medium text-slate-700 mb-2">Estilo de letra:</label>
+                          <div className="flex gap-2">
+                            <button
+                              type="button"
+                              onClick={() => updateTextElement(selectedElementData.id, 'outline', false)}
+                              className={`flex-1 py-2 px-3 rounded-lg border-2 text-sm font-medium transition-all ${
+                                !selectedElementData.outline
+                                  ? 'border-blue-500 bg-blue-50 text-blue-700'
+                                  : 'border-slate-300 bg-white text-slate-600 hover:border-slate-400'
+                              }`}
+                              style={{ fontFamily: selectedElementData.fontFamily }}
+                            >
+                              <span className="block text-base leading-tight">Aa</span>
+                              <span className="block text-xs mt-0.5">Relleno</span>
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => updateTextElement(selectedElementData.id, 'outline', true)}
+                              className={`flex-1 py-2 px-3 rounded-lg border-2 text-sm font-medium transition-all ${
+                                selectedElementData.outline
+                                  ? 'border-blue-500 bg-blue-50 text-blue-700'
+                                  : 'border-slate-300 bg-white text-slate-600 hover:border-slate-400'
+                              }`}
+                              style={{
+                                fontFamily: selectedElementData.fontFamily,
+                                WebkitTextStroke: `1.5px ${selectedElementData.outline ? '#2563eb' : '#64748b'}`,
+                                WebkitTextFillColor: 'transparent',
+                              }}
+                            >
+                              <span className="block text-base leading-tight">Aa</span>
+                              <span
+                                className="block text-xs mt-0.5"
+                                style={{ WebkitTextStroke: '0px', WebkitTextFillColor: selectedElementData.outline ? '#1d4ed8' : '#64748b' }}
+                              >
+                                Contorno
+                              </span>
+                            </button>
+                          </div>
                         </div>
+
+                        {/* Grosor del contorno (solo visible en modo outline) */}
+                        {selectedElementData.outline && (
+                          <div>
+                            <label className="block text-sm font-medium text-slate-700 mb-2">
+                              Grosor del contorno: <span className="text-blue-600 font-bold">{selectedElementData.outlineWidth ?? 2}</span>
+                            </label>
+                            <input
+                              type="range"
+                              min="1"
+                              max="8"
+                              step="0.5"
+                              value={selectedElementData.outlineWidth ?? 2}
+                              onChange={(e) => updateTextElement(selectedElementData.id, 'outlineWidth', parseFloat(e.target.value))}
+                              className="w-full"
+                            />
+                            <div className="flex justify-between text-xs text-slate-400 mt-1">
+                              <span>Fino</span>
+                              <span>Grueso</span>
+                            </div>
+                          </div>
+                        )}
+                        
                       </>
                     )}
                     
