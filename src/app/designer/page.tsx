@@ -1650,7 +1650,7 @@ const ShirtDesigner = () => {
                             </label>
                             <input
                               type="range"
-                              min="1"
+                              min="0.5"
                               max="8"
                               step="0.5"
                               value={selectedElementData.outlineWidth ?? 2}
