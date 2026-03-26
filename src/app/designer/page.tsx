@@ -106,6 +106,13 @@ const DimensionGuides = ({ sizeSpec }) => {
 };
 
 
+// --- FACTORES DE CALIBRACIÓN UV → CM ---
+// Calibrado empíricamente con talla M (51x72 cm):
+//   scaleX=1.0 mostraba 36cm  → factor = 51/36 ≈ 1.4167
+//   scaleY=1.0 mostraba 68cm  → factor = 72/68 ≈ 1.0588
+const UV_SCALE_FACTOR_W = 51 / 36;
+const UV_SCALE_FACTOR_H = 72 / 68;
+
 const ShirtDesigner = () => {
 
   const viewerRef = useRef(null);
@@ -219,31 +226,15 @@ const ShirtDesigner = () => {
 
   // --- CALCULO DE DIMENSIONES DINÁMICO ---
   const getElementDimensionsInCm = (element) => {
-    let aspectRatio = 1;
-    if (element.type === 'image' && element.texture?.image) {
-      aspectRatio = element.texture.image.height / element.texture.image.width;
-    } else if (element.type === 'text') {
-      aspectRatio = 0.3;
-    }
-    
-    // Obtener el ancho de la camiseta actual en cm
-    const shirtWidthCm = SHIRT_SPECS[currentSize].width;
-    
-    // Calcular factor de conversión: 
-    // El canvas (2048px) representa el ancho completo de la textura. 
-    // Asumimos que el área visible del pecho es aprox el 50% del ancho de la textura UV.
-    // Ajuste empírico: element.scaleX es relativo a (canvasSize/2).
-    // Si scaleX es 1, el elemento mide 1024px.
-    // Proporción del ancho total (2048) = 0.5.
-    // Ancho físico = 0.5 * shirtWidthCm.
-    
-    const elementPixelWidth = (element.scaleX || element.scale) * (CANVAS_SIZE / 2);
-    const widthRatio = elementPixelWidth / CANVAS_SIZE; 
-    
-    // Ajustamos la escala para que sea realista. Multiplicamos por 2 para compensar la escala interna
-    const widthCm = widthRatio * shirtWidthCm * 2; 
-    const heightCm = widthCm * (element.scaleY / element.scaleX);
-    
+    const shirtWidthCm  = SHIRT_SPECS[currentSize].width;
+    const shirtHeightCm = SHIRT_SPECS[currentSize].height;
+
+    const scaleX = element.scaleX ?? element.scale ?? 0;
+    const scaleY = element.scaleY ?? element.scale ?? 0;
+
+    const widthCm  = scaleX * shirtWidthCm  * UV_SCALE_FACTOR_W;
+    const heightCm = scaleY * shirtHeightCm * UV_SCALE_FACTOR_H;
+
     return { width: widthCm.toFixed(1), height: heightCm.toFixed(1) };
   };
 
@@ -759,7 +750,7 @@ const ShirtDesigner = () => {
           const pos = get2DPositionFromElement(element);
           const distance = Math.sqrt((x - pos.x) ** 2 + (y - pos.y) ** 2);
           const scaleFactor = distance / scaleStart.current.distance;
-          const newScale = Math.max(0.02, Math.min(0.8, scaleStart.current.elementScale * scaleFactor));
+          const newScale = Math.max(0.02, Math.min(UV_SCALE_FACTOR_W, scaleStart.current.elementScale * scaleFactor));
           if (element.type === 'image') {
             updateImageElement(element.id, 'scale', newScale);
             updateImageElement(element.id, 'scaleX', newScale);
@@ -779,7 +770,7 @@ const ShirtDesigner = () => {
           const pixelToScale = 1 / (viewerRef.current.clientHeight / 2);
           if (currentHandle === 'edge-n' || currentHandle === 'edge-s') {
             const deltaScale = (currentHandle === 'edge-n' ? -deltaY : deltaY) * pixelToScale;
-            const newHeight = Math.max(0.02, Math.min(0.8, scaleStart.current.height + deltaScale));
+            const newHeight = Math.max(0.02, Math.min(UV_SCALE_FACTOR_H, scaleStart.current.height + deltaScale));
             if (element.type === 'image') {
               updateImageElement(element.id, 'scaleY', newHeight);
             } else {
@@ -787,7 +778,7 @@ const ShirtDesigner = () => {
             }
           } else if (currentHandle === 'edge-w' || currentHandle === 'edge-e') {
             const deltaScale = (currentHandle === 'edge-w' ? -deltaX : deltaX) * pixelToScale;
-            const newWidth = Math.max(0.02, Math.min(0.8, scaleStart.current.width + deltaScale));
+            const newWidth = Math.max(0.02, Math.min(UV_SCALE_FACTOR_W, scaleStart.current.width + deltaScale));
             if (element.type === 'image') {
               updateImageElement(element.id, 'scaleX', newWidth);
             } else {
@@ -929,7 +920,7 @@ const ShirtDesigner = () => {
             const pos = get2DPositionFromElement(element);
             const distance = Math.sqrt((x - pos.x) ** 2 + (y - pos.y) ** 2);
             const scaleFactor = distance / scaleStart.current.distance;
-            const newScale = Math.max(0.02, Math.min(0.8, scaleStart.current.elementScale * scaleFactor));
+            const newScale = Math.max(0.02, Math.min(UV_SCALE_FACTOR_W, scaleStart.current.elementScale * scaleFactor));
             if (element.type === 'image') {
               updateImageElement(element.id, 'scale', newScale);
               updateImageElement(element.id, 'scaleX', newScale);
@@ -949,7 +940,7 @@ const ShirtDesigner = () => {
             const pixelToScale = 1 / (viewerRef.current.clientHeight / 2);
             if (currentHandle === 'edge-n' || currentHandle === 'edge-s') {
               const deltaScale = (currentHandle === 'edge-n' ? -deltaY : deltaY) * pixelToScale;
-              const newHeight = Math.max(0.02, Math.min(0.8, scaleStart.current.height + deltaScale));
+              const newHeight = Math.max(0.02, Math.min(UV_SCALE_FACTOR_H, scaleStart.current.height + deltaScale));
               if (element.type === 'image') {
                 updateImageElement(element.id, 'scaleY', newHeight);
               } else {
@@ -957,7 +948,7 @@ const ShirtDesigner = () => {
               }
             } else if (currentHandle === 'edge-w' || currentHandle === 'edge-e') {
               const deltaScale = (currentHandle === 'edge-w' ? -deltaX : deltaX) * pixelToScale;
-              const newWidth = Math.max(0.02, Math.min(0.8, scaleStart.current.width + deltaScale));
+              const newWidth = Math.max(0.02, Math.min(UV_SCALE_FACTOR_W, scaleStart.current.width + deltaScale));
               if (element.type === 'image') {
                 updateImageElement(element.id, 'scaleX', newWidth);
               } else {
