@@ -8,10 +8,10 @@ import Image from 'next/image';
 const Logo = () => (
   <Link href="/" className="flex items-center space-x-2 group">
     <Image
-      src="/models/Logo.png" // Reemplaza con la ruta a tu logo
+      src="/models/logo-sg.png" // Reemplaza con la ruta a tu logo
       alt="Custom Studio Logo"
-      width={50} // Un tamaño más refinado
-      height={50}
+      width={60} // Un tamaño más refinado
+      height={60}
       priority
       className="transition-transform duration-300 group-hover:rotate-[10deg]"
     />
@@ -60,7 +60,7 @@ export default function Navbar() {
 
   return (
     <header className="sticky top-0 z-50 w-full bg-[#faf7f3]/80 backdrop-blur-md border-b border-[#c9d1d4]/50">
-      <div className="container mx-auto px-6 py-4">
+      <div className="container mx-auto px-6 py-4" style={{ padding: "5px 20px" }}>
         <div className="flex justify-between items-center">
           <Logo />
           
