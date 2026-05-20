@@ -286,6 +286,9 @@ const ShirtDesigner = () => {
 
     const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
     renderer.setSize(width, height);
+    renderer.setPixelRatio(window.devicePixelRatio);
+    renderer.outputColorSpace = THREE.SRGBColorSpace;
+    renderer.toneMapping = THREE.NoToneMapping;
     renderer.shadowMap.enabled = true;
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     rendererRef.current = renderer;
@@ -389,6 +392,7 @@ const ShirtDesigner = () => {
     }
 
     const combinedTexture = new THREE.CanvasTexture(canvas);
+    combinedTexture.colorSpace = THREE.SRGBColorSpace;
     combinedTexture.wrapS = THREE.ClampToEdgeWrapping;
     combinedTexture.wrapT = THREE.ClampToEdgeWrapping;
     combinedTexture.minFilter = THREE.LinearFilter;
@@ -400,6 +404,13 @@ const ShirtDesigner = () => {
         const applyTextureToMaterial = (mat, uuidKey) => {
           mat.map = combinedTexture;
           mat.color.set(0xffffff);
+          mat.transparent = false;
+          mat.opacity = 1.0;
+          // Neutralize PBR properties that darken the texture
+          if (mat.roughness !== undefined) mat.roughness = 1.0;
+          if (mat.metalness !== undefined) mat.metalness = 0.0;
+          if (mat.emissive !== undefined) mat.emissive.set(0x000000);
+          if (mat.emissiveIntensity !== undefined) mat.emissiveIntensity = 0;
           mat.needsUpdate = true;
           materialsWithTexture.current.add(uuidKey);
         };
@@ -1115,6 +1126,9 @@ const ShirtDesigner = () => {
       const img = new Image();
       img.onload = function() {
         const texture = new THREE.Texture(img);
+        texture.minFilter = THREE.LinearFilter;
+        texture.magFilter = THREE.LinearFilter;
+        texture.generateMipmaps = false;
         texture.needsUpdate = true;
         setImageElements(prev => prev.map(el => {
           if (el.id === id) {
@@ -1169,6 +1183,8 @@ const ShirtDesigner = () => {
     ctx.translate(centerX, centerY);
     ctx.rotate(element.rotation || 0);
     if (element.flipped) ctx.scale(-1, 1);
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = 'high';
     ctx.drawImage(element.texture.image, -imageWidth / 2, -imageHeight / 2, imageWidth, imageHeight);
     ctx.restore();
   };
