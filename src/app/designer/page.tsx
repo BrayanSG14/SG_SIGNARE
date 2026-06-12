@@ -926,6 +926,7 @@ const ShirtDesigner = () => {
   const [elementIdCounter, setElementIdCounter] = useState(0);
   const [isModelLoaded, setIsModelLoaded] = useState(false);
   const [isLoadingModel, setIsLoadingModel] = useState(true);
+  const [debugMsg, setDebugMsg] = useState('init');
   const [selectedElement, setSelectedElement] = useState(null);
   const [activeHandle, setActiveHandle] = useState(null);
   const [isColorSectionOpen, setIsColorSectionOpen] = useState(true);
@@ -1011,6 +1012,7 @@ const ShirtDesigner = () => {
     const viewer = viewerRef.current;
     const width = viewer.clientWidth;
     const height = viewer.clientHeight;
+    setDebugMsg(`viewer: ${width}x${height}, dpr: ${window.devicePixelRatio}`);
     const scene = new THREE.Scene();
     scene.background = new THREE.Color(0xfaf7f3);
     sceneRef.current = scene;
@@ -1019,13 +1021,18 @@ const ShirtDesigner = () => {
     cameraRef.current = camera;
     const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
     renderer.setSize(width, height);
-    renderer.setPixelRatio(window.devicePixelRatio);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    // renderer.setPixelRatio(window.devicePixelRatio);
     renderer.outputColorSpace = THREE.SRGBColorSpace;
     renderer.toneMapping = THREE.NoToneMapping;
     renderer.shadowMap.enabled = true;
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     rendererRef.current = renderer;
     viewer.appendChild(renderer.domElement);
+    renderer.domElement.addEventListener('webglcontextlost', (e) => {
+      e.preventDefault();
+      alert('Contexto WebGL perdido. Tamaño: ' + viewer.clientWidth + 'x' + viewer.clientHeight);
+    });
     const ambientLight = new THREE.AmbientLight(0xffffff, 1);
     scene.add(ambientLight);
     const directionalLight = new THREE.DirectionalLight(0xffffff, 2);
@@ -1087,6 +1094,9 @@ const ShirtDesigner = () => {
         if (elementOnFront === viewingFront) drawControlsOnCanvas(ctx, element, canvas.width, canvas.height, element.side);
       }
     }
+    if (modelRef.current.__lastTexture) {
+      modelRef.current.__lastTexture.dispose();
+    }
     const combinedTexture = new THREE.CanvasTexture(canvas);
     combinedTexture.colorSpace = THREE.SRGBColorSpace;
     combinedTexture.wrapS = THREE.ClampToEdgeWrapping;
@@ -1094,6 +1104,7 @@ const ShirtDesigner = () => {
     combinedTexture.minFilter = THREE.LinearFilter;
     combinedTexture.magFilter = THREE.LinearFilter;
     combinedTexture.needsUpdate = true;
+    modelRef.current.__lastTexture = combinedTexture;
     modelRef.current.traverse((child) => {
       if (child.isMesh && child.material) {
         const applyTextureToMaterial = (mat, uuidKey) => {
@@ -1554,12 +1565,14 @@ const ShirtDesigner = () => {
     });
   };
 
-  const loadModelFromPath = (path) => {
-    setIsLoadingModel(true);
+    const loadModelFromPath = (path) => {
+      setDebugMsg('Iniciando carga: ' + path);
+      setIsLoadingModel(true);
     const loader = new GLTFLoader();
     loader.load(
       path,
       (gltf) => {
+        setDebugMsg('Modelo cargado OK');
         clearScene();
         const model = gltf.scene || gltf;
         modelRef.current = model;
@@ -1575,11 +1588,11 @@ const ShirtDesigner = () => {
         setIsModelLoaded(true);
         setIsLoadingModel(false);
       },
-      (xhr) => console.log((xhr.loaded / xhr.total * 100) + '% cargado'),
+      (xhr) => setDebugMsg(`Cargando: ${Math.round(xhr.loaded / xhr.total * 100)}%`),
       (error) => {
+        setDebugMsg('ERROR cargando modelo: ' + JSON.stringify(error.message || error));
         console.error('Error al cargar modelo:', error);
         setIsLoadingModel(false);
-        alert('No se pudo cargar el modelo 3D. Verifica que el archivo existe en /models/Shirt3D.glb');
       }
     );
   };
@@ -1811,7 +1824,8 @@ const ShirtDesigner = () => {
         <div className="main-layout" style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
 
           {/* 3D Viewer Pane */}
-          <div className="viewer-pane" style={{ height: '50vh', flex: 1, overflow: 'hidden', position: 'relative' }}>
+          {/* <div className="viewer-pane" style={{ height: '50vh', flex: 1, overflow: 'hidden', position: 'relative' }}> */}
+          <div className="viewer-pane" style={{ height: '50dvh', minHeight: '320px', flex: 1, overflow: 'hidden', position: 'relative' }}>
             <div style={{
               height: '100%', width: '100%',
               background: 'linear-gradient(160deg, #f0ece5 0%, #faf7f3 50%, #ede8e0 100%)',
@@ -1820,6 +1834,12 @@ const ShirtDesigner = () => {
               position: 'relative',
             }}>
               <div ref={viewerRef} className="touch-none" style={{ width: '100%', height: '100%', position: 'relative', zIndex: 10 }}>
+                <div style={{
+                  position: 'absolute', top: 0, left: 0, zIndex: 999,
+                  background: 'rgba(0,0,0,0.7)', color: 'lime',
+                  fontSize: 10, padding: 4, maxWidth: '100%',
+                  wordBreak: 'break-all', fontFamily: 'monospace'
+                }}>{debugMsg}</div>
                 {isLoadingModel && (
                   <div style={{
                     position: 'absolute', inset: 0,
