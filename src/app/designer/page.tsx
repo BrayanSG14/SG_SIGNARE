@@ -1867,7 +1867,7 @@ const ShirtDesigner = () => {
             overflowY: 'auto',
             padding: '20px 18px 28px',
             background: 'rgba(250,247,243,0.6)',
-            backdropFilter: 'blur(32px)',
+            //backdropFilter: 'blur(32px)',
             borderLeft: '1px solid rgba(255,255,255,0.5)',
             display: 'flex',
             flexDirection: 'column',
