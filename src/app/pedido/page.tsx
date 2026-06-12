@@ -45,7 +45,7 @@ const lgStyles = `
     --shadow-lg: 0 16px 48px rgba(0,22,45,0.13), 0 4px 12px rgba(0,22,45,0.07);
     --text-primary: #00162d;
     --text-secondary: rgba(0,22,45,0.55);
-    --text-muted: rgba(0,22,45,0.35);
+    --text-muted: rgba(0, 22, 45, 0.69);
     --radius-sm: 10px;
     --radius-md: 16px;
     --radius-lg: 22px;
