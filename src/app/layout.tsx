@@ -58,9 +58,9 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
           }
 
           body {
-            background:
+            /*background:
               radial-gradient(circle at 10% 0%, rgba(255, 255, 255, 0.70), transparent 34rem),
-              linear-gradient(135deg, var(--sg-bg) 0%, var(--sg-bg2) 100%);
+              linear-gradient(135deg, var(--sg-bg) 0%, var(--sg-bg2) 100%);*/
             color: var(--sg-text);
             margin: 0;
             transition: background-color 0.4s, color 0.3s;

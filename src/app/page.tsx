@@ -40,7 +40,7 @@ export default function HomePage() {
           background:
             linear-gradient(115deg, transparent 0 18%, rgba(120, 101, 77, 0.08) 18.1% 18.35%, transparent 18.45% 100%),
             linear-gradient(74deg, transparent 0 47%, rgba(0, 22, 45, 0.055) 47.1% 47.28%, transparent 47.38% 100%),
-            radial-gradient(ellipse at 82% 18%, rgba(174, 153, 118, 0.18), transparent 28rem),
+            radial-gradient(ellipse at 82% 18%, rgba(174, 153, 118, 0.08), transparent 28rem),
             radial-gradient(ellipse at 18% 72%, rgba(112, 139, 146, 0.13), transparent 30rem);
         }
 
@@ -57,7 +57,7 @@ export default function HomePage() {
           background:
             linear-gradient(115deg, transparent 0 18%, rgba(255, 255, 255, 0.055) 18.1% 18.35%, transparent 18.45% 100%),
             linear-gradient(74deg, transparent 0 47%, rgba(185, 204, 220, 0.05) 47.1% 47.28%, transparent 47.38% 100%),
-            radial-gradient(ellipse at 82% 18%, rgba(180, 160, 125, 0.10), transparent 28rem),
+            radial-gradient(ellipse at 82% 18%, rgba(180, 160, 125, 0), transparent 28rem),
             radial-gradient(ellipse at 18% 72%, rgba(110, 145, 160, 0.10), transparent 30rem);
         }
 

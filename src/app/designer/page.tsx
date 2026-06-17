@@ -203,8 +203,8 @@ const ShirtDesigner = () => {
 
   const shirtColors = [
     { color: '#ffffff', name: 'Blanco' },
-    { color: 'rgb(187, 187, 187)', name: 'Gris' },
-    { color: 'rgb(53, 53, 53)', name: 'Negro' },
+    { color: 'rgb(139, 139, 139)', name: 'Gris' },
+    { color: 'rgb(41, 41, 41)', name: 'Negro' },
   ];
 
   const fabricTypes = [
@@ -248,12 +248,14 @@ const ShirtDesigner = () => {
     const height = viewer.clientHeight;
     const scene = new THREE.Scene();
     const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-    scene.background = new THREE.Color(isDark ? 0x080a0f : 0xfaf7f3);
+    // scene.background = new THREE.Color(isDark ? #080a0f61 : #faf7f34d);
+    scene.background = null; // transparente
     sceneRef.current = scene;
     const camera = new THREE.PerspectiveCamera(75, width / height, 0.1, 1000);
     camera.position.set(0, 0, 5);
     cameraRef.current = camera;
-    const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
+    const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true, alpha: true });
+    renderer.setClearColor(0x000000, 0); // fondo completamente transparente
     renderer.setSize(width, height);
     renderer.setPixelRatio(window.devicePixelRatio);
     renderer.outputColorSpace = THREE.SRGBColorSpace;
@@ -361,18 +363,6 @@ const ShirtDesigner = () => {
 
   useEffect(() => { imageElementsRef.current = imageElements; }, [imageElements]);
   useEffect(() => { textElementsRef.current = textElements; }, [textElements]);
-
-  useEffect(() => {
-    const updateSceneBg = () => {
-      if (!sceneRef.current) return;
-      const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-      sceneRef.current.background = new THREE.Color(isDark ? 0x080a0f : 0xfaf7f3);
-    };
-    updateSceneBg();
-    const observer = new MutationObserver(updateSceneBg);
-    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
-    return () => observer.disconnect();
-  }, []);
 
   const drawControlsOnCanvas = (ctx, element, canvasWidth, canvasHeight, side) => {
     const designAreaHeight = canvasHeight / 2;
@@ -1245,10 +1235,10 @@ const ShirtDesigner = () => {
           --bg-radial-a: rgba(174,153,118,0.18);
           --bg-radial-b: rgba(112,139,146,0.13);
 
-          --sidebar-bg: rgba(250,247,243,0.55);
-          --sidebar-blur: blur(28px) saturate(160%);
-          --sidebar-border: rgba(255,255,255,0.5);
-          --sidebar-shadow: rgba(0,22,45,0.04);
+        --sidebar-bg: transparent;
+        --sidebar-blur: none;
+        --sidebar-border: transparent;
+        --sidebar-shadow: none;
 
           --card-bg: rgba(255,255,255,0.55);
           --card-blur: blur(20px) saturate(180%);
@@ -1390,13 +1380,13 @@ const ShirtDesigner = () => {
           --bg-page-from: #080a0f;
           --bg-page-to: #0d1018;
 
-          --sidebar-bg: rgba(12,15,22,0.72);
-          --sidebar-blur: blur(32px) saturate(200%) brightness(1.08);
-          --sidebar-border: rgba(255,255,255,0.055);
-          --sidebar-shadow: rgba(0,0,0,0.5);
+          --sidebar-bg: transparent;
+          --sidebar-blur: none;
+          --sidebar-border: transparent;
+          --sidebar-shadow: none;
 
           --card-bg: rgba(255,255,255,0.04);
-          --card-blur: blur(24px) saturate(180%);
+          --card-blur: blur(7px) saturate(180%);
           --card-border: rgba(255,255,255,0.07);
           --card-shadow: rgba(0,0,0,0.3);
           --card-accent-border: rgba(180,200,255,0.1);
@@ -1529,85 +1519,35 @@ const ShirtDesigner = () => {
           --field-icon-color: rgba(180,200,230,0.45);
         }
 
-        /* ============================================================
-           PAGE BACKGROUND
-        ============================================================ */
-        .sg-designer-bg {
-          position: relative;
-          isolation: isolate;
-          background: linear-gradient(180deg, var(--bg-page-from) 0%, var(--bg-page-to) 100%);
-        }
-
-        .sg-designer-bg::before {
-          content: '';
-          position: absolute;
-          inset: 0;
-          pointer-events: none;
-          z-index: 0;
-          background:
-            linear-gradient(115deg, transparent 0 18%, var(--bg-streak-a) 18.1% 18.35%, transparent 18.45% 100%),
-            linear-gradient(74deg, transparent 0 47%, var(--bg-streak-b) 47.1% 47.28%, transparent 47.38% 100%),
-            radial-gradient(ellipse at 82% 18%, var(--bg-radial-a), transparent 28rem),
-            radial-gradient(ellipse at 18% 72%, var(--bg-radial-b), transparent 30rem);
-        }
-
-        .sg-designer-bg::after {
-          content: '';
-          position: absolute;
-          inset: 0;
-          pointer-events: none;
-          z-index: 0;
-          opacity: 0.46;
-          background-image:
-            repeating-linear-gradient(90deg, var(--bg-noise-line-v) 0 1px, transparent 1px 42px),
-            repeating-linear-gradient(0deg, var(--bg-noise-line-h) 0 1px, transparent 1px 42px);
-          mask-image: linear-gradient(to bottom, rgba(0,0,0,0.95), rgba(0,0,0,0.28) 72%, transparent);
-        }
-
-        /* Dark bg radial glows */
-        [data-theme="dark"] .sg-designer-bg::before {
-          background:
-            radial-gradient(ellipse at 20% 15%, rgba(60,80,160,0.12), transparent 35rem),
-            radial-gradient(ellipse at 80% 75%, rgba(30,55,120,0.10), transparent 40rem),
-            radial-gradient(ellipse at 60% 40%, rgba(20,35,90,0.08), transparent 25rem);
-        }
-
-        [data-theme="dark"] .sg-designer-bg::after {
-          opacity: 0.25;
-          background-image:
-            repeating-linear-gradient(90deg, rgba(255,255,255,0.025) 0 1px, transparent 1px 42px),
-            repeating-linear-gradient(0deg, rgba(255,255,255,0.018) 0 1px, transparent 1px 42px);
-        }
-
-        /* ============================================================
-           LAYOUT COMPONENTS
-        ============================================================ */
         .sidebar-panel {
-          background: var(--sidebar-bg);
-          backdrop-filter: var(--sidebar-blur);
-          -webkit-backdrop-filter: var(--sidebar-blur);
-          border-left: 1px solid var(--sidebar-border);
-          box-shadow: -1px 0 40px var(--sidebar-shadow);
-        }
-
-        /* Dark sidebar: specular top highlight */
-        [data-theme="dark"] .sidebar-panel {
-          box-shadow: -1px 0 60px var(--sidebar-shadow), inset 1px 0 0 rgba(255,255,255,0.055);
+          background: transparent;
+          backdrop-filter: none;
+          -webkit-backdrop-filter: none;
+          border-left: none;
+          box-shadow: none;
         }
 
         .glass-card {
-          background: var(--card-bg);
-          backdrop-filter: var(--card-blur);
+          background-color: transparent;
+          /*backdrop-filter: var(--card-blur);*/
           -webkit-backdrop-filter: var(--card-blur);
-          border: 1px solid var(--card-border);
+          /*border: 1px solid var(--card-border);*/
           border-radius: 1.25rem;
-          box-shadow: 0 4px 24px var(--card-shadow);
+          /*box-shadow: 0 4px 24px var(--card-shadow);*/
           transition: box-shadow 0.25s ease, border-color 0.25s ease;
+        }
+
+        [data-theme="dark"] .glass-card:hover {
+          box-shadow: 0 4px 24px  rgba(237, 237, 237, 0.3), inset 0 1.5px 0 rgba(255,255,255,0.34);
+        }
+        
+        .glass-card:hover {
+          box-shadow: 0 4px 24px  rgba(0, 0, 0, 0.42);
         }
 
         /* Dark cards: inner-top specular gleam */
         [data-theme="dark"] .glass-card {
-          box-shadow: 0 4px 24px var(--card-shadow), inset 0 1px 0 rgba(255,255,255,0.07);
+          box-shadow: inset 0 1.5px 0 rgba(255,255,255,0.34);
         }
 
         .glass-card-accent {
